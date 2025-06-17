@@ -1,0 +1,33 @@
+
+🧪 Running: AdminCheck.js
+✅ Passed: AdminCheck.js
+
+🧪 Running: AlreadyVote.js
+✅ Passed: AlreadyVote.js
+
+🧪 Running: dashboard.js
+✅ Passed: dashboard.js
+
+🧪 Running: logintest.js
+✅ Passed: logintest.js
+
+🧪 Running: PerofileSetting.js
+✅ Passed: PerofileSetting.js
+
+🧪 Running: ProfileView.js
+✅ Passed: ProfileView.js
+
+🧪 Running: SignUp.js
+✅ Passed: SignUp.js
+
+🧪 Running: UpdateProfile.js
+✅ Passed: UpdateProfile.js
+
+🧪 Running: ValidUserForVote.js
+✅ Passed: ValidUserForVote.js
+
+🧪 Running: ViewLeaderBoard.js
+✅ Passed: ViewLeaderBoard.js
+
+✅ Total Passed: 10
+❌ Total Failed: 0

@@ -1,0 +1,15 @@
+{
+  "name": "webtesting",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "node RunTest.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "selenium-webdriver": "^4.33.0"
+  }
+}
