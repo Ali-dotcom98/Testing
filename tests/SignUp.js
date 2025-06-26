@@ -25,7 +25,7 @@ async function testSignup() {
 
 
         const testUsername = "Test311@gmail.com";
-        const testPassword = "123456";
+        const testPassword = "12345";
 
         console.log("2. Filling name field with:", testUsername);
         const nameField = await driver.findElement(By.id('Username'));
