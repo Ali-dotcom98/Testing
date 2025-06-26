@@ -25,7 +25,7 @@ async function testLogin() {
         console.log("2. Filling email field...");
         const emailField = await driver.findElement(By.id('Email'));
         await emailField.clear();
-        await emailField.sendKeys('test@example78787887.com');
+        await emailField.sendKeys('test@example.com');
 
         console.log("3. Filling password field...");
         const passwordField = await driver.findElement(By.id('Password'));
