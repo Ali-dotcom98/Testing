@@ -58,13 +58,15 @@ async function testProfileUpdate() {
             until.elementLocated(By.xpath("//div[contains(@class, 'text-2xl') and contains(., 'Update Customer')]")),
             10000
         );
+
         assert.ok(await formHeader.isDisplayed(), 'Update form header should be visible');
 
-        console.log('\n✅ Test stopped after step 7 as requested');
+        console.log('\n✅ TEST PASSED: Profile update page loaded successfully!');
         process.exit(0);
 
     } catch (error) {
-        console.error('\n❌ TEST FAILED:', error.message);
+        console.error('\n❌ TEST FAILED!');
+        console.error('   Reason:', error.message);
         process.exit(1);
     } finally {
         if (driver) {
@@ -74,5 +76,5 @@ async function testProfileUpdate() {
     }
 }
 
-console.log('\nStarting profile update test...');
+console.log('\n🧪 Starting profile update test...\n');
 testProfileUpdate();
