@@ -6,24 +6,29 @@ const files = fs.readdirSync(testDir).filter(f => f.endsWith('.js'));
 
 let passed = 0;
 let failed = 0;
-let report = '';
+let details = '';
 
 for (const file of files) {
     const filePath = `${testDir}/${file}`;
-    report += `\n🧪 Running: ${file}\n`;
+    details += `\n🧪 Running: ${file}\n`;
 
     try {
         execSync(`node ${filePath}`, { stdio: 'inherit' });
-        report += `✅ Passed: ${file}\n`;
+        details += `✅ Passed: ${file}\n`;
         passed++;
     } catch (err) {
-        report += `❌ Failed: ${file}\n`;
+        details += `❌ Failed: ${file}\n`;
         failed++;
     }
 }
 
-report += `\n✅ Total Passed: ${passed}`;
-report += `\n❌ Total Failed: ${failed}\n`;
+const summary = `📋 Test Report Summary
+==========================
+✅ Total Passed: ${passed}
+❌ Total Failed: ${failed}
+==========================\n`;
 
-fs.writeFileSync('test-report.txt', report);
-console.log(report);
+const finalReport = summary + details;
+
+fs.writeFileSync('test-report.txt', finalReport);
+console.log(finalReport);
