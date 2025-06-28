@@ -61,16 +61,11 @@ async function testProfileUpdate() {
         assert.ok(await formHeader.isDisplayed(), 'Update form header should be visible');
 
         console.log('\n✅ Test stopped after step 7 as requested');
+        process.exit(0);
 
     } catch (error) {
         console.error('\n❌ TEST FAILED:', error.message);
-        if (driver) {
-            await driver.takeScreenshot().then(image => {
-                require('fs').writeFileSync('update-test-failure.png', image, 'base64');
-                console.log('Screenshot saved as update-test-failure.png');
-            });
-        }
-        throw error;
+        process.exit(1);
     } finally {
         if (driver) {
             console.log('🧹 Closing browser...');
@@ -80,6 +75,4 @@ async function testProfileUpdate() {
 }
 
 console.log('\nStarting profile update test...');
-testProfileUpdate()
-    .then(() => console.log('\n✅ Test completed successfully'))
-    .catch(() => console.log('\n❌ Test encountered an error'));
+testProfileUpdate();

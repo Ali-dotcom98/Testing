@@ -14,16 +14,15 @@ async function testLeaderboardNavigation() {
     let driver;
     try {
         console.log('1. Launching browser...');
-        const options = new chrome.Options();
-        options.addArguments('--headless=new');
-        options.addArguments('--no-sandbox');
-        options.addArguments('--disable-dev-shm-usage');
+        const options = new chrome.Options()
+            .addArguments('--headless=new')
+            .addArguments('--no-sandbox')
+            .addArguments('--disable-dev-shm-usage');
 
         driver = await new Builder()
             .forBrowser('chrome')
             .setChromeOptions(options)
             .build();
-
 
         console.log('2. Logging in...');
         await driver.get(`${config.baseUrl}${config.loginPath}`);
@@ -31,10 +30,8 @@ async function testLeaderboardNavigation() {
         await driver.findElement(By.id('Password')).sendKeys(config.validCredentials.password);
         await driver.findElement(By.css('button[type="submit"]')).click();
 
-
         console.log('3. Waiting for dashboard to load...');
         await driver.wait(until.urlContains('home'), 10000);
-
 
         console.log('4. Locating Leaderboard link...');
         const leaderboardLink = await driver.wait(
@@ -49,7 +46,6 @@ async function testLeaderboardNavigation() {
         console.log('5. Clicking Leaderboard link...');
         await leaderboardLink.click();
 
-
         console.log('6. Verifying leaderboard page...');
         await driver.wait(until.urlContains('Leaderboard'), 5000);
         const currentUrl = await driver.getCurrentUrl();
@@ -57,30 +53,26 @@ async function testLeaderboardNavigation() {
         if (currentUrl.includes('Leaderboard')) {
             console.log('✔ Successfully navigated to leaderboard page');
 
-
             try {
                 const leaderboardHeader = await driver.wait(
-                    until.elementLocated(By.css('h1.leaderboard-header, h1:textContains("Leaderboard")')),
+                    until.elementLocated(By.xpath("//h1[contains(text(), 'Leaderboard')]")),
                     3000
                 );
-                console.log(`Leaderboard header: ${await leaderboardHeader.getText()}`);
+                console.log(`✔ Leaderboard header: ${await leaderboardHeader.getText()}`);
+                process.exit(0);
             } catch {
                 console.log('ℹ No specific leaderboard header found, but URL is correct');
+                process.exit(0);
             }
         } else {
             console.log('✖ Failed to navigate to leaderboard page');
             console.log(`Current URL: ${currentUrl}`);
+            process.exit(1);
         }
 
     } catch (error) {
-        console.error('❌ Test failed:', error);
-
-
-        if (driver) {
-            const screenshot = await driver.takeScreenshot();
-            require('fs').writeFileSync('leaderboard-test-failure.png', screenshot, 'base64');
-            console.log('Screenshot saved as leaderboard-test-failure.png');
-        }
+        console.error('❌ Test failed:', error.message);
+        process.exit(1);
     } finally {
         if (driver) {
             console.log('7. Closing browser...');

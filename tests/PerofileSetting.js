@@ -1,5 +1,6 @@
 const { Builder, By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
+const assert = require('assert');
 
 async function testProfileNavigation() {
     const config = {
@@ -13,72 +14,54 @@ async function testProfileNavigation() {
 
     let driver;
     try {
-        console.log('1. Launching browser...');
-        const options = new chrome.Options();
-        options.addArguments('--headless=new');
-        options.addArguments('--no-sandbox');
-        options.addArguments('--disable-dev-shm-usage');
+        console.log('1. 🚀 Launching browser...');
+        const options = new chrome.Options()
+            .addArguments('--headless=new')
+            .addArguments('--no-sandbox')
+            .addArguments('--disable-dev-shm-usage')
+            .addArguments('--disable-logging');
 
         driver = await new Builder()
             .forBrowser('chrome')
             .setChromeOptions(options)
             .build();
 
-
-        console.log('2. Logging in...');
+        console.log('2. 🔐 Logging in...');
         await driver.get(`${config.baseUrl}${config.loginPath}`);
         await driver.findElement(By.id('Email')).sendKeys(config.validCredentials.email);
         await driver.findElement(By.id('Password')).sendKeys(config.validCredentials.password);
         await driver.findElement(By.css('button[type="submit"]')).click();
 
-
-        console.log('3. Waiting for dashboard to load...');
+        console.log('3. 🏠 Waiting for dashboard to load...');
         await driver.wait(until.urlContains('home'), 10000);
 
-
-        console.log('4. Locating Profile link...');
+        console.log('4. 👤 Locating Profile link...');
         const profileLink = await driver.wait(
-            until.elementLocated(By.xpath(`
-                //a[contains(@href, '/home/UserProfile')]
-                //div[contains(@class, 'flex flex-row')]
-                //p[text()='Profile']
-            `)),
+            until.elementLocated(By.xpath("//p[text()='Profile']/ancestor::a[contains(@href, '/home/UserProfile')]")),
             5000
         );
 
-        console.log('5. Clicking Profile link...');
+        console.log('5. 🖱️ Clicking Profile link...');
         await profileLink.click();
 
-
-        console.log('6. Verifying profile page...');
+        console.log('6. ✅ Verifying profile page...');
         await driver.wait(until.urlContains('UserProfile'), 5000);
         const currentUrl = await driver.getCurrentUrl();
 
-        if (currentUrl.includes('UserProfile')) {
-            console.log('✔ Successfully navigated to profile page');
-
-
-        } else {
-            console.log('✖ Failed to navigate to profile page');
-            console.log(`Current URL: ${currentUrl}`);
-        }
+        assert.ok(currentUrl.includes('UserProfile'), 'Should navigate to UserProfile page');
+        console.log(`✔ Success! Navigated to: ${currentUrl}`);
+        process.exit(0);
 
     } catch (error) {
-        console.error('❌ Test failed:', error);
-
-
-        if (driver) {
-            const screenshot = await driver.takeScreenshot();
-            require('fs').writeFileSync('profile-test-failure.png', screenshot, 'base64');
-            console.log('Screenshot saved as profile-test-failure.png');
-        }
+        console.error('❌ Test failed:', error.message);
+        process.exit(1);
     } finally {
         if (driver) {
-            console.log('7. Closing browser...');
+            console.log('7. 🧹 Closing browser...');
             await driver.quit();
         }
     }
 }
 
-// Run the test
+console.log('\n🧪 Starting profile navigation test...\n');
 testProfileNavigation();

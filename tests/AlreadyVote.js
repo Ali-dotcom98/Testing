@@ -54,11 +54,15 @@ async function testVoteErrorMessage() {
         if (/already (voted|have voted)/i.test(errorText)) {
             console.log('5. ⚠️  Valid voting error detected');
             console.log('\n🏁 TEST SUCCESS: Correctly identified voting restriction');
-            return;
+            process.exit(0);
+        } else {
+            console.log('\n❌ TEST FAILED: Expected voting restriction message not found');
+            process.exit(1);
         }
 
     } catch (error) {
         console.error('\n❌ TEST FAILED:', error.message);
+        process.exit(1);
     } finally {
         if (driver) {
             console.log('   ✔ Closing browser...');
@@ -67,8 +71,5 @@ async function testVoteErrorMessage() {
     }
 }
 
-
 console.log('Starting voting test...\n');
-testVoteErrorMessage()
-    .then(() => process.exit(0))
-    .catch(() => process.exit(1));
+testVoteErrorMessage();

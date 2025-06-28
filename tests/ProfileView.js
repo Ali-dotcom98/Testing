@@ -17,7 +17,9 @@ async function testProfileViewNavigation() {
         console.log('1. 🚀 Launching browser...');
         const options = new chrome.Options()
             .addArguments('--headless=new')
-            .addArguments('--disable-dev-shm-usage');
+            .addArguments('--disable-dev-shm-usage')
+            .addArguments('--no-sandbox')
+            .addArguments('--disable-logging');
 
         driver = await new Builder()
             .forBrowser('chrome')
@@ -30,7 +32,7 @@ async function testProfileViewNavigation() {
         await driver.findElement(By.id('Password')).sendKeys(config.validCredentials.password);
         await driver.findElement(By.css('button[type="submit"]')).click();
 
-        console.log('3. 🏠 Navigating to dashboard...');
+        console.log('3. 🏠 Waiting for dashboard...');
         await driver.wait(until.urlContains('home'), 5000);
 
         console.log('4. 👤 Clicking Profile link...');
@@ -40,52 +42,39 @@ async function testProfileViewNavigation() {
         );
         await profileLink.click();
 
-        console.log('5. 🔍 Verifying profile page loaded...');
+        console.log('5. 🔍 Waiting for Profile page...');
         await driver.wait(until.urlContains('UserProfile'), 5000);
 
         console.log('6. 👁️ Clicking view (eye) icon...');
-        const viewButton = await driver.wait(
-            until.elementLocated(By.id('View')),
-            3000
-        );
+        const viewButton = await driver.wait(until.elementLocated(By.id('View')), 5000);
         await viewButton.click();
 
-        console.log('7. 🔎 Verifying User Profile page...');
-
+        console.log('7. 🔎 Verifying User Profile view...');
         const profileHeader = await driver.wait(
             until.elementLocated(By.xpath("//div[contains(@class, 'text-2xl') and contains(text(), 'User Profile')]")),
             5000
         );
-
-        assert.ok(await profileHeader.isDisplayed(), 'User Profile header should be visible');
-        console.log(`✔ Verified header: "${await profileHeader.getText()}"`);
-
+        assert.ok(await profileHeader.isDisplayed(), 'Profile header not visible');
+        console.log(`✔ Profile Header: ${await profileHeader.getText()}`);
 
         const backButton = await driver.findElement(By.xpath("//a[contains(@href, '/home/UserProfile')]"));
         assert.ok(await backButton.isDisplayed(), 'Back button should exist');
 
-
         const userName = await driver.findElement(By.css('h1.text-2xl.font-semibold'));
-        console.log(`✔ User name displayed: "${await userName.getText()}"`);
-
+        console.log(`✔ User name displayed: ${await userName.getText()}`);
 
         const nameField = await driver.findElement(By.id('Name'));
-        assert.notEqual(await nameField.getAttribute('placeholder'), '', 'Name field should have data');
+        assert.notStrictEqual(await nameField.getAttribute('placeholder'), '', 'Name field should not be empty');
 
         const cnicField = await driver.findElement(By.id('Email'));
-        assert.notEqual(await cnicField.getAttribute('placeholder'), '', 'CNIC field should have data');
+        assert.notStrictEqual(await cnicField.getAttribute('placeholder'), '', 'Email field should not be empty');
 
         console.log('\n🏁 TEST COMPLETE: Successfully navigated to User Profile view');
+        process.exit(0);
 
     } catch (error) {
         console.error('\n❌ TEST FAILED:', error.message);
-        if (driver) {
-            await driver.takeScreenshot().then(image => {
-                require('fs').writeFileSync('profile-view-failure.png', image, 'base64');
-                console.log('Screenshot saved as profile-view-failure.png');
-            });
-        }
-        throw error;
+        process.exit(1);
     } finally {
         if (driver) {
             console.log('🧹 Closing browser...');
@@ -94,7 +83,5 @@ async function testProfileViewNavigation() {
     }
 }
 
-console.log('\nStarting profile view navigation test...');
-testProfileViewNavigation()
-    .then(() => console.log('\n✅ Profile view navigation test passed'))
-    .catch(() => console.log('\n❌ Profile view navigation test failed'));
+console.log('\n🧪 Starting profile view navigation test...');
+testProfileViewNavigation();

@@ -3,65 +3,48 @@ const chrome = require('selenium-webdriver/chrome');
 const assert = require('assert');
 
 async function testLogin() {
+    const options = new chrome.Options()
+        .addArguments('--headless=new')
+        .addArguments('--no-sandbox')
+        .addArguments('--disable-dev-shm-usage');
 
-    let options = new chrome.Options();
-    options.addArguments('--headless=new');
-    options.addArguments('--no-sandbox');
-    options.addArguments('--disable-dev-shm-usage');
-
-
-    let driver = await new Builder()
+    const driver = await new Builder()
         .forBrowser('chrome')
         .setChromeOptions(options)
         .build();
 
     try {
-        console.log("1. Navigating to login page...");
+        console.log('1. 🌐 Navigating to login page...');
         await driver.get('http://localhost:3000/Site/Login');
-
-
         await driver.wait(until.elementLocated(By.id('Email')), 5000);
 
-        console.log("2. Filling email field...");
-        const emailField = await driver.findElement(By.id('Email'));
-        await emailField.clear();
-        await emailField.sendKeys('test@example.com');
+        console.log('2. ✍️ Filling correct credentials...');
+        await driver.findElement(By.id('Email')).sendKeys('Alishah1234584.as@gmail.com');
+        await driver.findElement(By.id('Password')).sendKeys('12345');
 
-        console.log("3. Filling password field...");
-        const passwordField = await driver.findElement(By.id('Password'));
-        await passwordField.clear();
-        await passwordField.sendKeys('wrongpassword');
+        console.log('3. 🔐 Clicking login...');
+        await driver.findElement(By.css('button[type="submit"]')).click();
 
-        console.log("4. Clicking login button...");
-        const loginButton = await driver.findElement(By.css('button[type="submit"]'));
-        await loginButton.click();
+        console.log('4. ⏳ Waiting for redirect to home...');
+        await driver.wait(until.urlContains('home'), 10000);
 
-        console.log("5. Waiting for response...");
-
-        await driver.wait(async () => {
-            const currentUrl = await driver.getCurrentUrl();
-            const errorElements = await driver.findElements(By.id('error'));
-            return currentUrl !== 'http://localhost:3000/Site/Login' || errorElements.length > 0;
-        }, 5000);
-
-
-        const errorElements = await driver.findElements(By.id('error'));
-        if (errorElements.length > 0) {
-            const errorText = await errorElements[0].getText();
-            console.log(`✔ Test passed - Error message displayed: "${errorText}"`);
-            assert.ok(errorText.length > 0, 'Error message should not be empty');
+        const currentUrl = await driver.getCurrentUrl();
+        if (currentUrl.includes('/home')) {
+            console.log(`✅ Test passed - Successfully logged in! Redirected to: ${currentUrl}`);
+            process.exit(0);
         } else {
-            const currentUrl = await driver.getCurrentUrl();
-            console.log(`✖ Test failed - Unexpected redirect to: ${currentUrl}`);
-            assert.fail('Login should have failed with error message');
+            console.log(`❌ Test failed - Not redirected to home. Current URL: ${currentUrl}`);
+            assert.fail('Did not redirect to home page after login');
         }
+
     } catch (error) {
-        console.error('Test failed:', error);
-        throw error;
+        console.error('❌ Test encountered an error:', error.message);
+        process.exit(1);
     } finally {
-        console.log("6. Closing browser...");
+        console.log('5. 🧹 Closing browser...');
         await driver.quit();
     }
 }
 
-testLogin().catch(console.error);
+console.log('\n🚀 Starting login success test...');
+testLogin();

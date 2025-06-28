@@ -1,122 +1,90 @@
 const { Builder, By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
-const assert = require('assert');
 
 async function testSignup() {
+    const testData = {
+        username: 'Test90900@gmail.com',
+        password: '12345'
+    };
 
-    let options = new chrome.Options()
+    const options = new chrome.Options()
         .addArguments('--headless=new')
         .addArguments('--no-sandbox')
         .addArguments('--disable-dev-shm-usage')
         .addArguments('--disable-gpu')
-        .addArguments('--log-level=3');
+        .addArguments('--log-level=3')
+        .addArguments('--disable-logging');
 
-
-    let driver = await new Builder()
-        .forBrowser('chrome')
-        .setChromeOptions(options)
-        .build();
+    let driver;
 
     try {
-        console.log("1. Navigating to signup page...");
+        console.log("1. 🚀 Navigating to signup page...");
+        driver = await new Builder()
+            .forBrowser('chrome')
+            .setChromeOptions(options)
+            .build();
+
         await driver.get('http://localhost:3000/Site/Signup');
         await driver.wait(until.elementLocated(By.id('Username')), 5000);
 
+        console.log(`2. 📝 Filling signup form with: ${testData.username}`);
+        await driver.findElement(By.id('Username')).sendKeys(testData.username);
+        await driver.findElement(By.id('Password')).sendKeys(testData.password);
 
+        console.log("3. 🖱️ Submitting the signup form...");
+        await driver.findElement(By.css('button[type="submit"]')).click();
 
-        const testUsername = "Test311@gmail.com";
-        const testPassword = "12345";
-
-        console.log("2. Filling name field with:", testUsername);
-        const nameField = await driver.findElement(By.id('Username'));
-        await nameField.clear();
-        await nameField.sendKeys(testUsername);
-
-        console.log("3. Filling password field...");
-        const passwordField = await driver.findElement(By.id('Password'));
-        await passwordField.clear();
-        await passwordField.sendKeys(testPassword);
-
-        console.log("4. Clicking signup button...");
-        const signupButton = await driver.findElement(By.css('button[type="submit"]'));
-        await signupButton.click();
-
-        console.log("5. Waiting for response (max 10 seconds)...");
-
+        console.log("4. ⏳ Waiting for redirect, message or validation...");
         await driver.wait(async () => {
-            const currentUrl = await driver.getCurrentUrl();
+            const url = await driver.getCurrentUrl();
 
+            if (url.includes('home')) return true;
 
-            if (currentUrl.includes('home')) return true;
+            const message = await driver.findElements(By.id('message'));
+            if (message.length > 0 && await message[0].isDisplayed()) return true;
 
-            try {
-                const message = await driver.findElement(By.id('message'));
-                if (await message.isDisplayed()) return true;
-            } catch { }
-
-
-            try {
-                const invalidFields = await driver.findElements(By.css('.Invalid'));
-                if (invalidFields.length > 0) return true;
-            } catch { }
-
-            return false;
+            const invalids = await driver.findElements(By.css('.Invalid'));
+            return invalids.length > 0;
         }, 10000);
 
+        const finalUrl = await driver.getCurrentUrl();
 
-        const currentUrl = await driver.getCurrentUrl();
-
-        if (currentUrl.includes('home')) {
-            console.log(`✔ Signup successful - Redirected to: ${currentUrl}`);
-            assert.ok(true, 'Successful signup should redirect to home');
+        if (finalUrl.includes('home')) {
+            console.log(`✅ Signup successful! Redirected to: ${finalUrl}`);
+            process.exit(0);
         }
-        else {
 
-            try {
-                const messageElement = await driver.findElement(By.id('message'));
-                const messageText = await messageElement.getText();
-
-                if (messageText.trim()) {
-                    console.log(`✔ Message displayed: "${messageText}"`);
-                    assert.ok(true, 'Received expected message');
-                } else {
-                    console.log('⚠ Empty message element found');
-                    assert.fail('Message element exists but is empty');
+        const messageElements = await driver.findElements(By.id('message'));
+        if (messageElements.length > 0) {
+            const msg = await messageElements[0].getText();
+            if (msg.trim()) {
+                console.log(`⚠️ Message shown: "${msg}"`);
+                if (msg.includes("Email Should be Unique")) {
+                    console.error("❌ Test failed: Duplicate email detected.");
+                    process.exit(1);
                 }
-            } catch {
-
-                try {
-                    const invalidFields = await driver.findElements(By.css('.Invalid'));
-                    if (invalidFields.length > 0) {
-                        console.log('✔ Form validation errors present');
-                        assert.ok(true, 'Form validation working as expected');
-                    } else {
-
-                        await driver.takeScreenshot().then(image => {
-                            require('fs').writeFileSync('signup-test-failure.png', image, 'base64');
-                            console.log('Screenshot saved as signup-test-failure.png');
-                        });
-                        assert.fail('Unexpected state - no redirect, no message, no validation errors');
-                    }
-                } catch {
-                    assert.fail('Could not determine signup result');
-                }
+                process.exit(0);
             }
         }
-    } catch (error) {
-        console.error('Test failed:', error.message);
 
-        await driver.takeScreenshot().then(image => {
-            require('fs').writeFileSync('signup-test-error.png', image, 'base64');
-            console.log('Screenshot saved as signup-test-error.png');
-        });
-        throw error;
+        const invalidFields = await driver.findElements(By.css('.Invalid'));
+        if (invalidFields.length > 0) {
+            console.log('⚠️ Form validation errors detected');
+            process.exit(0);
+        }
+
+        console.log('❌ Unknown response. No success, message, or validation.');
+        process.exit(1);
+
+    } catch (error) {
+        console.error('❌ Test failed:', error.message);
+        process.exit(1);
     } finally {
-        console.log("6. Closing browser...");
-        await driver.quit();
+        if (driver) {
+            console.log("6. 🧹 Closing browser...");
+            await driver.quit();
+        }
     }
 }
 
-testSignup()
-    .then(() => console.log('✅ Signup test completed successfully'))
-    .catch(() => console.log('❌ Signup test failed'));
+testSignup();

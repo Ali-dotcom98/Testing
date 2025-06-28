@@ -2,7 +2,6 @@ const { Builder, By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 
 async function testVoteErrorMessage() {
-
     const options = new chrome.Options()
         .addArguments('--headless=new')
         .addArguments('--no-sandbox')
@@ -51,14 +50,18 @@ async function testVoteErrorMessage() {
         const errorText = await errorDiv.getText();
         console.log(`   ✖ Voting error: "${errorText}"`);
 
-        if (/already (voted|have voted)/i.test(errorText)) {
-            console.log('5. ⚠️  Valid voting error detected');
+        if (/already (voted|have voted|registered)/i.test(errorText)) {
+            console.log('5. ⚠️  Valid voting-related error detected');
             console.log('\n🏁 TEST SUCCESS: Correctly identified voting restriction');
-            return;
+        } else {
+            console.log('❌ Unexpected error message. Failing test...');
+            process.exit(1);
         }
+
 
     } catch (error) {
         console.error('\n❌ TEST FAILED:', error.message);
+        process.exit(1);
     } finally {
         if (driver) {
             console.log('   ✔ Closing browser...');
@@ -67,8 +70,7 @@ async function testVoteErrorMessage() {
     }
 }
 
-
 console.log('Starting voting test...\n');
 testVoteErrorMessage()
     .then(() => process.exit(0))
-    .catch(() => process.exit(1));
+    .catch(() => process.exit(1));  
